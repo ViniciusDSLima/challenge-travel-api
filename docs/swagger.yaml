@@ -1,0 +1,386 @@
+basePath: /api/v1
+definitions:
+  dto.CreateTravelRequestDTO:
+    properties:
+      departure_date:
+        type: string
+      destination_name:
+        type: string
+      return_date:
+        type: string
+      traveler_name:
+        type: string
+    required:
+    - departure_date
+    - destination_name
+    - traveler_name
+    type: object
+  dto.LoginRequestDTO:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LoginResponseDTO:
+    properties:
+      access_token:
+        type: string
+    type: object
+  dto.RegisterRequestDTO:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        $ref: '#/definitions/enums.UserType'
+    required:
+    - email
+    - name
+    - password
+    - role
+    type: object
+  dto.UpdateStatusTravelRequestDTO:
+    properties:
+      status:
+        $ref: '#/definitions/enums.TravelRequestStatus'
+      travel_request_id:
+        type: string
+    required:
+    - travel_request_id
+    type: object
+  dto.UpdateTravelRequestDTO:
+    properties:
+      departure_date:
+        type: string
+      destination_name:
+        type: string
+      return_date:
+        type: string
+      traveler_name:
+        type: string
+    type: object
+  entity.TravelRequest:
+    properties:
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      canceled_at:
+        type: string
+      canceled_by:
+        type: string
+      created_at:
+        type: string
+      departure_date:
+        type: string
+      destination_name:
+        type: string
+      id:
+        type: string
+      return_date:
+        type: string
+      status:
+        $ref: '#/definitions/enums.TravelRequestStatus'
+      traveler_name:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/entity.User'
+      user_id:
+        type: string
+    type: object
+  entity.User:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        $ref: '#/definitions/enums.UserType'
+      updated_at:
+        type: string
+    type: object
+  enums.TravelRequestStatus:
+    enum:
+    - SOLICITED
+    - APPROVED
+    - CANCELED
+    type: string
+    x-enum-varnames:
+    - TravelRequestStatusSolicited
+    - TravelRequestStatusApproved
+    - TravelRequestStatusCanceled
+  enums.UserType:
+    enum:
+    - USER
+    - ADMIN
+    type: string
+    x-enum-varnames:
+    - UserTypeCommon
+    - UserTypeAdmin
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: Suporte
+    url: http://www.swagger.io/support
+  description: API para gerenciamento de solicitações de viagem
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: API de Solicitações de Viagem
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica um usuário e retorna um token JWT
+      parameters:
+      - description: Credenciais do usuário
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Autenticar usuário
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Registra um novo usuário no sistema
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Registrar um novo usuário
+      tags:
+      - auth
+  /travels:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de solicitações de viagem com filtros opcionais
+      parameters:
+      - description: Filtrar por status (PENDING, APPROVED, CANCELED)
+        in: query
+        name: status
+        type: string
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Nome do destino
+        in: query
+        name: destination
+        type: string
+      - default: 1
+        description: Número da página
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Tamanho da página
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.TravelRequest'
+            type: array
+      security:
+      - Bearer: []
+      summary: Listar solicitações de viagem
+      tags:
+      - travels
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova solicitação de viagem para o usuário autenticado
+      parameters:
+      - description: Dados da solicitação de viagem
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTravelRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.TravelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Criar uma nova solicitação de viagem
+      tags:
+      - travels
+  /travels/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retorna os detalhes de uma solicitação de viagem específica
+      parameters:
+      - description: ID da solicitação de viagem
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.TravelRequest'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Obter detalhes de uma solicitação de viagem
+      tags:
+      - travels
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma solicitação de viagem existente
+      parameters:
+      - description: ID da solicitação de viagem
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados da solicitação
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTravelRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.TravelRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Atualizar uma solicitação de viagem
+      tags:
+      - travels
+  /travels/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Atualiza o status de uma solicitação de viagem (aprovado/cancelado)
+      parameters:
+      - description: ID da solicitação de viagem
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Novo status da solicitação
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStatusTravelRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Atualizar status da solicitação de viagem
+      tags:
+      - travels
+securityDefinitions:
+  Bearer:
+    description: Digite "Bearer" seguido de um espaço e o token JWT.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

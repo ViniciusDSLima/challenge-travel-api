@@ -1,0 +1,587 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para gerenciamento de solicitações de viagem",
+        "title": "API de Solicitações de Viagem",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Suporte",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Autentica um usuário e retorna um token JWT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Autenticar usuário",
+                "parameters": [
+                    {
+                        "description": "Credenciais do usuário",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Registra um novo usuário no sistema",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Registrar um novo usuário",
+                "parameters": [
+                    {
+                        "description": "Dados do usuário",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/travels": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retorna uma lista de solicitações de viagem com filtros opcionais",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "travels"
+                ],
+                "summary": "Listar solicitações de viagem",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filtrar por status (PENDING, APPROVED, CANCELED)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Data inicial (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Data final (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Nome do destino",
+                        "name": "destination",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Número da página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Tamanho da página",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.TravelRequest"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cria uma nova solicitação de viagem para o usuário autenticado",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "travels"
+                ],
+                "summary": "Criar uma nova solicitação de viagem",
+                "parameters": [
+                    {
+                        "description": "Dados da solicitação de viagem",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTravelRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TravelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/travels/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retorna os detalhes de uma solicitação de viagem específica",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "travels"
+                ],
+                "summary": "Obter detalhes de uma solicitação de viagem",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID da solicitação de viagem",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TravelRequest"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Atualiza os dados de uma solicitação de viagem existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "travels"
+                ],
+                "summary": "Atualizar uma solicitação de viagem",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID da solicitação de viagem",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dados atualizados da solicitação",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTravelRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TravelRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/travels/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Atualiza o status de uma solicitação de viagem (aprovado/cancelado)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "travels"
+                ],
+                "summary": "Atualizar status da solicitação de viagem",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID da solicitação de viagem",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Novo status da solicitação",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateStatusTravelRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.CreateTravelRequestDTO": {
+            "type": "object",
+            "required": [
+                "departure_date",
+                "destination_name",
+                "traveler_name"
+            ],
+            "properties": {
+                "departure_date": {
+                    "type": "string"
+                },
+                "destination_name": {
+                    "type": "string"
+                },
+                "return_date": {
+                    "type": "string"
+                },
+                "traveler_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginRequestDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "dto.LoginResponseDTO": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RegisterRequestDTO": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "role"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "role": {
+                    "$ref": "#/definitions/enums.UserType"
+                }
+            }
+        },
+        "dto.UpdateStatusTravelRequestDTO": {
+            "type": "object",
+            "required": [
+                "travel_request_id"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/enums.TravelRequestStatus"
+                },
+                "travel_request_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateTravelRequestDTO": {
+            "type": "object",
+            "properties": {
+                "departure_date": {
+                    "type": "string"
+                },
+                "destination_name": {
+                    "type": "string"
+                },
+                "return_date": {
+                    "type": "string"
+                },
+                "traveler_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.TravelRequest": {
+            "type": "object",
+            "properties": {
+                "approved_at": {
+                    "type": "string"
+                },
+                "approved_by": {
+                    "type": "string"
+                },
+                "canceled_at": {
+                    "type": "string"
+                },
+                "canceled_by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "departure_date": {
+                    "type": "string"
+                },
+                "destination_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "return_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/enums.TravelRequestStatus"
+                },
+                "traveler_name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/entity.User"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/enums.UserType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "enums.TravelRequestStatus": {
+            "type": "string",
+            "enum": [
+                "SOLICITED",
+                "APPROVED",
+                "CANCELED"
+            ],
+            "x-enum-varnames": [
+                "TravelRequestStatusSolicited",
+                "TravelRequestStatusApproved",
+                "TravelRequestStatusCanceled"
+            ]
+        },
+        "enums.UserType": {
+            "type": "string",
+            "enum": [
+                "USER",
+                "ADMIN"
+            ],
+            "x-enum-varnames": [
+                "UserTypeCommon",
+                "UserTypeAdmin"
+            ]
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Digite \"Bearer\" seguido de um espaço e o token JWT.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
